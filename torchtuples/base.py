@@ -18,12 +18,12 @@ from torchtuples.utils import make_name_hash, array_or_tensor, is_data, is_dl
 
 class Model(object):
     """Train torch models using dataloaders, tensors or np.arrays.
-    
+
     Arguments:
         net {torch.nn.Module} -- A torch module.
-    
+
     Keyword Arguments:
-        loss {function} -- Set function that is used for training 
+        loss {function} -- Set function that is used for training
             (e.g. binary_cross_entropy for torch) (default: {None})
         optimizer {Optimizer} -- A torch optimizer or similar. Preferrably use torchtuples.optim instead of
             torch.optim, as this allows for reinitialization, etc. If 'None' set to torchtuples.optim.AdamW.
@@ -96,7 +96,7 @@ class Model(object):
                              f" got {type(device)}")
         self._device = device
         self.net.to(self.device)
-    
+
     @property
     def optimizer(self):
         return self._optimizer
@@ -118,7 +118,7 @@ class Model(object):
         separatelly.
 
         This simply calls tupletree.make_dataloader, but is included to make
-        inheritance simpler. 
+        inheritance simpler.
 
         Arguments:
             data {tuple, np.array, tensor} -- Data in dataloader e.g. (x, y)
@@ -135,7 +135,7 @@ class Model(object):
         """
         dataloader = make_dataloader(data, batch_size, shuffle, num_workers, **kwargs)
         return dataloader
-    
+
     def _setup_train_info(self, dataloader):
         self.fit_info = {'batches_per_epoch': len(dataloader)}
         def _tuple_info(tuple_):
@@ -149,7 +149,7 @@ class Model(object):
                     self.fit_info['input'] = _tuple_info(input)
                 except:
                     pass
-    
+
     def _to_device(self, data) -> TupleTree:
         """Move `data` to self.device.
         If `data` is a tensor, it will be returned as a `TupleTree`.
@@ -160,7 +160,7 @@ class Model(object):
 
     def compute_metrics(self, data, metrics=None) -> Dict[str, torch.Tensor]:
         """Function for computing the loss and other metrics.
-        
+
         Arguments:
             data {tensor or tuple} -- A batch of data. Typically the tuple `(input, target)`.
 
@@ -195,15 +195,15 @@ class Model(object):
                        val_dataloader=None):
         """Fit a dataloader object.
         See 'fit' for tensors and np.arrays.
-        
+
         Arguments:
             dataloader {dataloader} -- A dataloader that gives (input, target).
-        
+
         Keyword Arguments:
             epochs {int} -- Number of epochs (default: {1})
             callbacks {list} -- list of callbacks (default: {None})
             verbose {bool} -- Print progress (default: {True})
-        
+
         Returns:
             TrainingLogger -- Training log
         """
@@ -243,11 +243,11 @@ class Model(object):
             num_workers=0, shuffle=True, metrics=None, val_data=None, val_batch_size=8224,
             **kwargs):
         """Fit  model with inputs and targets.
-        
+
         Arguments:
             input {np.array, tensor or tuple} -- Input (x) passed to net.
             target {np.array, tensor or tuple} -- Target (y) passed to loss function.
-        
+
         Keyword Arguments:
             batch_size {int} -- Elemets in each batch (default: {256})
             epochs {int} -- Number of epochs (default: {1})
@@ -258,7 +258,7 @@ class Model(object):
             **kwargs -- Passed to the 'make_dataloader' method. Set e.g. `torch_ds_dl to use
                 the TensorDataset and DataLoader provided by torch instead of the torchtuples
                 implementations.
-    
+
         Returns:
             TrainingLogger -- Training log
         """
@@ -321,10 +321,10 @@ class Model(object):
         If score_func is None, this use the loss function.
         If make_dataloader is None, we use self.make_dataloader_predict, unless score_func is also
         None, in which we use self.make_dataloader.
-        
+
         Arguments:
             data {np.array, tensor, tuple, dataloader} -- Data in the form a datloader, or arrarys/tensors.
-        
+
         Keyword Arguments:
             score_func {func} -- Function used for scoreing. If None, we use self.loss. (default: {None})
             batch_size {int} -- Batch size (default: {8224})
@@ -335,7 +335,7 @@ class Model(object):
             make_dataloader {func} -- Function for making a dataloder.
                 If None, we use make_dataloader_predict as long as score_func is not None. (default: {None})
             **kwargs -- Are passed to make_dataloader function.
-        
+
         Returns:
             np.array -- Scores
         """
@@ -349,7 +349,7 @@ class Model(object):
         dl = make_dataloader(input, batch_size, shuffle, num_workers, **kwargs)
         scores = self.score_in_batches_dataloader(dl, score_func, eval_, mean, numpy)
         return scores
-    
+
     def score_in_batches_dataloader(self, dataloader, score_func=None, eval_=True, mean=True, numpy=True):
         '''Score a dataset in batches.
 
@@ -450,10 +450,10 @@ class Model(object):
                 num_workers=0, is_dataloader=None, func=None, **kwargs):
         """Get predictions from 'input' using the `self.net(x)` method.
         Use `predict` instead if you want to use `self.net.predict(x)`.
-        
+
         Arguments:
             input {dataloader, tuple, np.ndarra, or torch.tensor} -- Input to net.
-        
+
         Keyword Arguments:
             batch_size {int} -- Batch size (default: {8224})
             numpy {bool} -- 'False' gives tensor, 'True' gives numpy, and None give same as input
@@ -466,7 +466,7 @@ class Model(object):
             func {func} -- A toch function, such as `torch.sigmoid` which is called after the predict.
                 (default: {None})
             **kwargs -- Passed to make_dataloader.
-        
+
         Returns:
             [TupleTree, np.ndarray or tensor] -- Predictions
         """
@@ -479,10 +479,10 @@ class Model(object):
                 num_workers=0, is_dataloader=None, func=None, **kwargs):
         """Get predictions from 'input' using the `self.net.predict(x)` method.
         Use `predict_net` instead if you want to use `self.net(x)`.
-        
+
         Arguments:
             input {dataloader, tuple, np.ndarra, or torch.tensor} -- Input to net.
-        
+
         Keyword Arguments:
             batch_size {int} -- Batch size (default: {8224})
             numpy {bool} -- 'False' gives tensor, 'True' gives numpy, and None give same as input
@@ -495,7 +495,7 @@ class Model(object):
             func {func} -- A toch function, such as `torch.sigmoid` which is called after the predict.
                 (default: {None})
             **kwargs -- Passed to make_dataloader.
-        
+
         Returns:
             [TupleTree, np.ndarray or tensor] -- Predictions
         """
@@ -507,6 +507,13 @@ class Model(object):
         preds = self._predict_func(pred_func, input, batch_size, numpy, eval_, grads, to_cpu, num_workers,
                                   is_dataloader, **kwargs)
         return array_or_tensor(preds, numpy, input)
+
+    def print_weights(self, path):
+        _file = open(path, "a")
+        _file.write("Weights: \n")
+        for key in self.net.state_dict():
+            _file.write(str(key) + " " + str(self.net.state_dict()[key]) + "\n")
+        _file.close()
 
     def save_model_weights(self, path, **kwargs):
         '''Save the model weights.
@@ -528,11 +535,11 @@ class Model(object):
 
     def save_net(self, path, **kwargs):
         """Save self.net to file (e.g. net.pt).
-        
+
         Arguments:
             path {str} -- Path to file.
             **kwargs are passed to torch.save
-        
+
         Returns:
             None
         """
@@ -540,11 +547,11 @@ class Model(object):
 
     def load_net(self, path, **kwargs):
         """Load net from file (e.g. net.pt), and set as self.net
-        
+
         Arguments:
             path {str} -- Path to file.
             **kwargs are passed to torch.load
-        
+
         Returns:
             torch.nn.Module -- self.net
         """

@@ -17,7 +17,7 @@ def apply_leaf(func):
     @apply_leaf
     def shape_of(data):
         return len(data)
-    
+
     shape_of(data)
 
     # Method 2:
@@ -71,10 +71,10 @@ def all_equal(data):
 
 def get_if_all_equal(data, default=None):
     """Get value of all are the same, else return default value.
-    
+
     Arguments:
         data {TupleTree} -- TupleTree data.
-    
+
     Keyword Arguments:
         default {any} -- Return if all are not equal (default: {None})
     """
@@ -84,7 +84,7 @@ def get_if_all_equal(data, default=None):
 
 def val_if_single(data):
     """Get value if there is only one element in the tupletree.
-    
+
     Arguments:
         data {TupleTree} -- TupleTree data.
     """
@@ -182,13 +182,13 @@ def flatten_tuple(data):
 
 def tuple_levels(data, level=-1):
     """Replaces objects with the level they are on.
-    
+
     Arguments:
         data {list or tuple} -- Data
-    
+
     Keyword Arguments:
         level {int} -- Start level. Default of -1 gives flat list levels 0 (default: {-1})
-    
+
     Returns:
         tuple -- Levels of objects
     """
@@ -240,7 +240,7 @@ def split(data, split_size, dim=0):
 def unzip_leaf(agg):
     """The inverse opeation of zip_leaf.
     This is essentialy a zip(*agg) opperation that works on the leaf nodes
-    ([a1, b1], ([a2, b2], [a3, b3])) -> ((a1, (a2, a3)), (b1, (b2, b3))) 
+    ([a1, b1], ([a2, b2], [a3, b3])) -> ((a1, (a2, a3)), (b1, (b2, b3)))
     """
     if type(agg) in _CONTAINERS:
         new = agg.apply_nrec(unzip_leaf)
@@ -249,12 +249,12 @@ def unzip_leaf(agg):
 
 def tuplefy(*data, types=(list, tuple), stop_at_tuple=True):
     """Make TupleTree object from *args.
-    
+
     Keyword Arguments:
         types {tuple} -- Types that should be transformed to TupleTree (default: {(list, tuple)})
         stop_at_tuple {bool} -- If 'True', the recusion stops at TupleTree elements,
-            and if 'False' it will continue through TupleTree elements. 
-    
+            and if 'False' it will continue through TupleTree elements.
+
     Returns:
         TupleTree -- A TupleTree object
     """
@@ -277,11 +277,11 @@ def tuplefy(*data, types=(list, tuple), stop_at_tuple=True):
 @apply_leaf
 def to_device(data, device):
     """Move data to device
-    
+
     Arguments:
         data {TupleTree, tensor} -- Tensors that should be moved to device.
         device {str, torch.device} -- Device data is moved to.
-    
+
     Returns:
         TupleTree, tensor -- Data moved to device
     """
@@ -290,14 +290,14 @@ def to_device(data, device):
     return data.to(device)
 
 def make_dataloader(data, batch_size, shuffle, num_workers=0, to_tensor=True, make_dataset=None,
-                    torch_ds_dl=False):
+                    torch_ds_dl=False, drop_last=False):
     """Create a dataloder from tensor or np.arrays.
-   
+
     Arguments:
         data {tuple, np.array, tensor} -- Data in dataloader e.g. (x, y)
         batch_size {int} -- Batch size used in dataloader
         shuffle {bool} -- If order should be suffled
-    
+
     Keyword Arguments:
         num_workers {int} -- Number of workers in dataloader (default: {0})
         to_tensor {bool} -- Ensure that we use tensors (default: {True})
@@ -305,7 +305,7 @@ def make_dataloader(data, batch_size, shuffle, num_workers=0, to_tensor=True, ma
             DatasetTuple. (default {None}).
         torch_ds_dl {bool} -- If `True` we TensorDataset and DataLoader from torch. If
             `False` we use the (faster) versions from torchtuple (default {False}).
-    
+
     Returns:
         DataLoaderBatch -- A dataloader object like the torch DataLoader
     """
@@ -321,7 +321,7 @@ def make_dataloader(data, batch_size, shuffle, num_workers=0, to_tensor=True, ma
     DataLoader = torchtuples.data.DataLoaderBatch
     if torch_ds_dl:
         DataLoader = torch.utils.data.DataLoader
-    dataloader = DataLoader(dataset, batch_size, shuffle=shuffle, num_workers=num_workers)
+    dataloader = DataLoader(dataset, batch_size, shuffle=shuffle, num_workers=num_workers, drop_last=drop_last)
     return dataloader
 
 def docstring(doc_func):
@@ -355,7 +355,7 @@ class TupleTree(tuple):
         a = ((1, (2, 3), 4),
              (1, (2, 3), 4),
              (1, (2, 3), 4),)
-        tuplefy(a).reduce(lambda x, y: x+y) 
+        tuplefy(a).reduce(lambda x, y: x+y)
 
         Gives: (3, (6, 9), 12)
         """
@@ -363,19 +363,19 @@ class TupleTree(tuple):
 
     def __add__(self, other):
         return self._constructor(super().__add__(other))
-    
+
     @docstring(shapes_of)
     def shapes(self):
         return shapes_of(self)
-    
+
     @docstring(lens_of)
     def lens(self):
         return lens_of(self)
-    
+
     @docstring(dtypes_of)
     def dtypes(self):
         return dtypes_of(self)
-    
+
     @docstring(numpy_to_tensor)
     def to_tensor(self):
         if self.type() is torch.Tensor:
@@ -387,11 +387,11 @@ class TupleTree(tuple):
         if self.type() is np.ndarray:
             return self
         return tensor_to_numpy(self)
-    
+
     @docstring(type_of)
     def type(self):
         return type_of(self)
-    
+
     @docstring(types_of)
     def types(self):
         return types_of(self)
@@ -431,7 +431,7 @@ class TupleTree(tuple):
     def apply_nrec(self, func):
         """Apply non-recursive, only first list"""
         return TupleTree(func(sub) for sub in self)
-    
+
     def all(self):
         if not self.is_flat():
             raise RuntimeError("Need to have a flat structure to use 'all'")
@@ -498,7 +498,7 @@ class TupleTree(tuple):
     def numerate(self):
         """Replace leaf nodes with numbers from 0 to num. leaf nodes.
         Gives call order of apply function.
-        
+
         Returns:
             TupleTree -- Numerated leaf nodes.
         """
@@ -507,13 +507,13 @@ class TupleTree(tuple):
 
     def reorder(self, order):
         """Reorder tree according to order.
-        
+
         Arguments:
             order {TupleTree, tuple, list} -- Enumerated structure used for reordering.
-        
+
         Returns:
             TupleTree -- Same data reordered according to order.
-        
+
         Example:
             a = tuplefy(list('abcd'), list('ef'))  # (('a', 'b', 'c', 'd'), ('e', 'f'))
             order = (0, (1, 2,), (5,))
@@ -534,7 +534,7 @@ class TupleTree(tuple):
         Example:
             a = tuplefy(list('abcd'), list('ef'))  # (('a', 'b', 'c', 'd'), ('e', 'f'))
             a.enumerate()   # (([0, 'a'], [1, 'b'], [2, 'c'], [3, 'd']), ([4, 'e'], [5, 'f']))
-        
+
         """
         counter = itertools.count()
         return self.apply(lambda x: [next(counter), x])
